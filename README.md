@@ -1,68 +1,40 @@
-# ReliefTrail — Transparent Disaster Relief Fund Tracking
+# ReliefTrail
 
-ReliefTrail is a Solidity prototype for transparent disaster-relief fund tracking. It explores whether on-chain records can make donations and organizer-approved payouts easier to audit. A payout also records a cryptographic fingerprint that can be compared with a receipt kept off-chain.
+### Transparent disaster-relief fund tracking prototype
 
-This is an early-stage prototype. A receipt fingerprint does not prove that a receipt is genuine or that aid reached anyone. A real system would need trusted organizations, independent review, privacy controls, delivery confirmation, and shared payout approval.
+ReliefTrail is a Solidity prototype for recording donations and organizer-authorized relief payouts in a publicly inspectable ledger. It explores how smart contracts can make recorded fund movements easier to review.
 
-## What it demonstrates
+This is an early prototype that runs in Remix VM with simulated accounts and ETH. A blockchain can make submitted transactions inspectable, but it cannot prove a receipt is genuine or that aid reached anyone.
 
-- `donate()` accepts native currency and logs the donor and amount.
-- `payRelief(...)` lets only the deploying organizer send a payout.
-- Payouts above the available balance, zero amounts, zero recipient addresses, and missing evidence fingerprints are rejected.
-- Totals, counts, available balance, and transaction events can be inspected.
+## Demonstration
 
-## Tools
+The sample run records two donations totaling 1.5 ETH, then an organizer-authorized payout of 0.4 ETH, leaving 1.1 ETH in the contract. A payout attempted by a non-organizer account reverts.
 
-- Solidity `^0.8.24`
-- Remix IDE
-- Remix VM (local test blockchain; no real ETH)
+![ReliefTrail running in Remix VM](screenshots/relieftrail-remix-demo.jpg)
 
-## Files
+All currency shown is simulated Remix VM test ETH. There is no public testnet or mainnet deployment. Remix VM contract addresses change when the local VM resets.
 
-```text
-contracts/ReliefTrail.sol       Smart contract source
-README.md                       Project and run instructions
-docs/PROJECT_REPORT.pdf         Submission report
-docs/PROJECT_REPORT.md          Editable report source
-screenshots/README.md           Demo image notes
-screenshots/relieftrail-remix-demo.jpg  Remix demonstration image
-LICENSE                         MIT license
-```
-
-## Compile and run in Remix
+## Run locally in Remix
 
 1. Open [Remix IDE](https://remix.ethereum.org/).
 2. Create `ReliefTrail.sol` and paste the source from `contracts/ReliefTrail.sol`.
-3. Choose compiler 0.8.24 or compatible 0.8.x and compile.
-4. Under **Deploy & Run Transactions**, select **Remix VM** and deploy. The deploying account becomes `reliefOrganizer`.
-5. Select another account, set transaction VALUE to `1 Ether`, and call `donate()`. Repeat with a third account and `0.5 Ether`.
-6. Confirm `totalDonated` is `1500000000000000000` wei and `donationCount` is 2.
-7. Select the deploying account and call `payRelief` with a recipient account address, amount `400000000000000000` wei, purpose `emergency food kits`, and a nonzero 32-byte fingerprint such as `0x1111111111111111111111111111111111111111111111111111111111111111`.
-8. Confirm `totalPaidOut` is `400000000000000000` wei, `payoutCount` is 1, and `availableBalance` is `1100000000000000000` wei (1.1 ETH).
-9. Select a non-organizer account and try the payout again. It should revert with `OrganizerOnly`.
+3. Select Solidity 0.8.24 or a compatible 0.8.x compiler and compile.
+4. Under **Deploy & Run Transactions**, choose **Remix VM** and deploy. The deploying account becomes `reliefOrganizer`.
+5. Select another account, set transaction **VALUE** to `1 Ether`, and call `donate()`. Repeat from a third account with `0.5 Ether`.
+6. Confirm `totalDonated` is `1500000000000000000` wei and `donationCount` is `2`.
+7. From the deploying account, call `payRelief` with a recipient account address, amount `400000000000000000` wei, purpose `emergency food kits`, and a nonzero 32-byte fingerprint such as `0x1111111111111111111111111111111111111111111111111111111111111111`.
+8. Confirm `totalPaidOut` is `400000000000000000` wei, `payoutCount` is `1`, and `availableBalance` is `1100000000000000000` wei.
+9. Select a non-organizer account and try a payout. It should revert with `OrganizerOnly`.
 
-## Demo run and deployment
+## Design and limitations
 
-The contract compiled and ran in Remix VM (Osaka). The demonstration recorded two donations totalling 1.5 ETH, a 0.4 ETH payout, and a remaining balance of 1.1 ETH. A payout from a non-organizer account reverted with `OrganizerOnly`.
+See [System Design](docs/ARCHITECTURE.md) for the components, transaction flow, contract rules, and trust boundaries.
 
-Remix VM contract address during that session: `0xd9145CCE52D386f254917e481eB44e9943F39138`. This is a temporary local address; it is not deployed to a public testnet or mainnet and may not persist after Remix resets.
+The evidence fingerprint is public and does not validate the evidence itself. Keep receipts and personal information off-chain. The deployer has sole payout authority in this prototype; a production system would need independent governance, privacy protections, operational controls, and a security review.
 
-## Demo screenshot
+## Repository contents
 
-The [Remix demo screenshot](screenshots/relieftrail-remix-demo.jpg) shows the compiled Solidity contract, local Remix VM, deployed contract controls, and the 0.4 ETH payout readout. A separate fresh Remix VM run recorded donations of 1 ETH and 0.5 ETH, then an organizer-approved payout of 0.4 ETH. All displayed currency is simulated test ETH; no public network or real funds are involved.
-
-## Evidence hash and privacy
-
-For a real workflow, keep evidence files in secure off-chain storage and record only a Keccak-256 fingerprint on-chain. A matching hash can show that a file matches a fingerprint already recorded; it cannot validate the truth of that file. Do not publish private documents or personal data to a public blockchain.
-
-## Future development path
-
-1. Add multi-signature approval so one organizer cannot authorize payouts alone.
-2. Add recipient delivery acknowledgement and independently reviewed evidence.
-3. Build a basic Python web page to display blockchain events.
-4. Add QR-based verification while keeping personal data off-chain.
-5. Consider a real pilot only with a partner organization, privacy review, security review, and test data.
-
-## License
-
-MIT. See `LICENSE`.
+- `contracts/ReliefTrail.sol` — Solidity contract
+- `docs/ARCHITECTURE.md` — system design and limitations
+- `screenshots/relieftrail-remix-demo.jpg` — local Remix VM demonstration
+- `LICENSE` — MIT License
