@@ -1,12 +1,5 @@
-# Remix demo evidence checklist
+# Remix demo screenshot
 
-Capture these from the live Remix VM session and save the images in this folder:
+`relieftrail-remix-demo.jpg` captures the compiled ReliefTrail contract and its deployed controls in Remix VM. It records a later local demonstration session with two simulated donations (1.0 and 0.5 ETH) and a 0.4 ETH organizer payout. The payout total readout shows 0.4 ETH.
 
-1. Compiled `ReliefTrail.sol` showing a successful compile.
-2. Remix VM deployment showing the contract address.
-3. Successful donation calls / `DonationReceived` logs.
-4. Successful `payRelief` call / `ReliefPaid` log with the demo fingerprint.
-5. Read results for total donated, total paid out, payout/donation counts, and available balance.
-6. A non-organizer payout reverting with `OrganizerOnly`.
-
-The values and run results are described in the project report. Screenshots are not included yet; add them to document the demonstration.
+Remix VM uses temporary test accounts and simulated ETH. The screenshot is demonstration evidence, not a public-chain deployment or proof of a real relief payment.

@@ -24,7 +24,8 @@ contracts/ReliefTrail.sol       Smart contract source
 README.md                       Project and run instructions
 docs/PROJECT_REPORT.pdf         Submission report
 docs/PROJECT_REPORT.md          Editable report source
-screenshots/README.md           Screenshot capture checklist
+screenshots/README.md           Demo image notes
+screenshots/relieftrail-remix-demo.jpg  Remix demonstration image
 LICENSE                         MIT license
 ```
 
@@ -46,9 +47,9 @@ The contract compiled and ran in Remix VM (Osaka). The demonstration recorded tw
 
 Remix VM contract address during that session: `0xd9145CCE52D386f254917e481eB44e9943F39138`. This is a temporary local address; it is not deployed to a public testnet or mainnet and may not persist after Remix resets.
 
-## Demo screenshots
+## Demo screenshot
 
-Capture screenshots of (1) the compiled contract, (2) deployed contract and address, (3) successful donation transactions, (4) successful payout and `ReliefPaid` event, (5) displayed totals/balance, and (6) the rejected non-organizer payout. Save them under `screenshots/`. The current repository includes a checklist; the images still need to be captured from the Remix session before final submission.
+The [Remix demo screenshot](screenshots/relieftrail-remix-demo.jpg) shows the compiled Solidity contract, local Remix VM, deployed contract controls, and the 0.4 ETH payout readout. A separate fresh Remix VM run recorded donations of 1 ETH and 0.5 ETH, then an organizer-approved payout of 0.4 ETH. All displayed currency is simulated test ETH; no public network or real funds are involved.
 
 ## Evidence hash and privacy
 
