@@ -1,50 +1,52 @@
-# ReliefTrail: System Design
+# ReliefTrail Blockchain architecture
 
-## Purpose
+## System shape
 
-ReliefTrail is an early EVM prototype for recording donations and organizer-authorized relief payouts in a publicly inspectable ledger. It demonstrates transaction rules and event logging. It does not verify that an organization is legitimate, that a receipt is truthful, or that aid reached a recipient.
+```mermaid
+flowchart LR
+  Donor[Donor wallet] -->|native token + donate| Contract[ReliefTrail contract]
+  Organizer[Deploying organizer wallet] -->|payRelief request| Contract
+  Contract -->|recipient.call| Recipient[Recipient wallet]
+  Contract -->|DonationReceived / ReliefPaid| Chain[Public EVM event log]
+  Receipt[Off-chain evidence file] -. fingerprint only .-> Contract
+  Reviewer[Donor or reviewer] -->|inspect events and state| Chain
+```
+
+The contract is the authority for the rules encoded in it. Wallets sign transactions; the chain executes contract code and records successful state changes and events. No frontend, API, database, or evidence service is included in this repository.
 
 ## Components
 
-- **Donor wallets** send native currency to `donate()`.
-- **ReliefTrail contract** tracks donations and payouts, checks authorization and balance, and emits events.
-- **Organizer wallet** is set to the deploying account and is the only account allowed to call `payRelief(...)`.
-- **Recipient wallet** receives the requested payout.
-- **Off-chain evidence storage** holds any receipt or supporting file. The contract stores only a `bytes32` fingerprint supplied by the caller.
+- **ReliefTrail contract:** accepts nonzero native-token donations and tracks total/count state. It authorizes payouts only from the immutable deployer address, checks recipient, amount, purpose length, and nonzero evidence hash, updates state, then attempts the transfer.
+- **Organizer wallet:** one address receives sole payout authority at deployment. This keeps the prototype small but creates a single key/approval risk.
+- **Donor and recipient wallets:** submit contributions and receive payouts. The contract does not verify legal identity or organization affiliation.
+- **Events:** expose donor/recipient, amount, balance, purpose, and supplied evidence fingerprint. Events and transaction history are public and permanent.
+- **Off-chain evidence:** any source file must be handled outside the contract. A hash can compare a future file to a submitted fingerprint; it cannot prove provenance, truth, or delivery.
+- **Hardhat:** compiles the contract and runs isolated tests on a local EVM. The Docker Compose service starts a local RPC node for manual integration work.
 
-## Transaction flow
+## Donation and payout flow
 
-1. A donor sends a nonzero payment to `donate()`.
-2. The contract increments the donated total and count, then emits `DonationReceived`.
+1. A donor calls `donate()` and sends a nonzero native-token value.
+2. The contract increments `totalDonated` and `donationCount`, then emits `DonationReceived` with the resulting balance.
 3. The organizer calls `payRelief(recipient, amount, purpose, evidenceHash)`.
-4. The contract checks the caller, recipient, amount, available balance, and evidence hash.
-5. The contract transfers the amount and emits `ReliefPaid`.
+4. The contract checks the caller, recipient, available balance, evidence hash, and public purpose length.
+5. The contract updates payout totals before making an external call. If the recipient rejects the transfer, the entire transaction reverts and the state updates do not persist.
+6. On success, `ReliefPaid` records the recipient, amount, purpose, and fingerprint.
 
-The payout purpose and evidence fingerprint are public. Do not place personal, confidential, or identifying information in them.
+## Key decisions and trade-offs
 
-## Contract rules
+- **Native currency only:** avoids token approvals and token-specific edge cases. The contract is not currency-agnostic and has no conversion or accounting integration.
+- **Single organizer:** simple to understand and test. It is unsuitable for real custody because one key can authorize all funds. A production design would need independent governance and recovery controls.
+- **Event-based history:** transactions and events are easy to inspect. They do not prove real-world outcomes and may expose sensitive metadata.
+- **Checks-effects-interactions:** accounting changes happen before the transfer; EVM revert semantics roll them back if the external call fails. This avoids leaving the accounting partially updated after a failed payment.
+- **Evidence fingerprint:** ties a later-provided file to the submitted hash if the same hash function and bytes are used. It does not validate the file, identity, timing, or claim.
+- **No payment-per-donation earmark:** all funds share one contract balance. The contract does not track donor restrictions, refund policy, accounting categories, or liabilities.
 
-| Function or state | Behavior |
-|---|---|
-| `reliefOrganizer` | Immutable address of the account that deployed this contract. |
-| `donate()` | Accepts a nonzero amount of native currency and records the donation. |
-| `payRelief(...)` | Organizer-only transfer; rejects invalid recipient, zero or over-balance amount, and empty evidence hash. |
-| `availableBalance()` | Returns the current contract balance. |
-| `DonationReceived` | Event containing donor, amount, and new contract balance. |
-| `ReliefPaid` | Event containing recipient, amount, purpose, and evidence fingerprint. |
+## Test strategy
 
-The payout applies its checks and updates accounting before the external transfer. A failed transfer reverts the whole transaction. This prototype does not include multi-signature approvals or independent evidence review.
+The Hardhat suite deploys a fresh contract for each test. It covers deployer authorization, donation event/state/balance behavior, nonzero contribution checks, organizer-only payout, zero recipient, invalid amounts, missing/invalid public input, successful payout accounting, and a recipient contract that rejects payment. CI compiles and runs the suite without external RPC credentials.
 
-## Local demonstration
+## Demo and production boundary
 
-The source is `contracts/ReliefTrail.sol`. Compile it in Remix with Solidity 0.8.24 or a compatible 0.8.x compiler, then deploy to **Remix VM**. Remix VM uses temporary test accounts and simulated ETH.
+The Remix screenshot uses simulated local ETH. The Sepolia deployment script is prepared but a public deployment is not claimed until it has been run and independently verified. No testnet private key belongs in Git or chat.
 
-The sample run records two donations totaling 1.5 ETH, followed by a 0.4 ETH payout. The contract retains 1.1 ETH. See the [Remix screenshot](../screenshots/relieftrail-remix-demo.jpg) and the run steps in the root README. Remix VM addresses are temporary and change after a reset.
-
-## Trust boundaries and limitations
-
-- Blockchain records make submitted transactions and events inspectable; they do not establish the truth of off-chain claims.
-- A hash can establish that a later file matches the fingerprint that was recorded. It cannot prove when, where, or by whom the file was created.
-- The deploying account has sole payout authority. A compromised or dishonest organizer can misuse that authority.
-- A real deployment would need independent governance, operational controls, privacy safeguards, security review, and a trusted organization responsible for verifying evidence.
-- This repository contains no public-network deployment and makes no production-readiness claim.
+This prototype has no audit, multi-signature control, pause/recovery path, compliance process, private evidence service, monitoring, or incident response. It must not hold real funds. See the root README for the deployment checklist and limitations.

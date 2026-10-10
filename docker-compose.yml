@@ -1,0 +1,6 @@
+services:
+  hardhat-node:
+    build: .
+    ports:
+      - "127.0.0.1:8545:8545"
+    command: ["pnpm", "exec", "hardhat", "node", "--hostname", "0.0.0.0"]

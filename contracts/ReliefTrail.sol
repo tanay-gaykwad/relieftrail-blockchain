@@ -24,7 +24,10 @@ contract ReliefTrail {
     error ZeroAddress();
     error InvalidPayoutAmount();
     error MissingEvidenceHash();
+    error InvalidPurpose();
     error PayoutFailed();
+
+    uint256 public constant MAX_PURPOSE_BYTES = 160;
 
     constructor() {
         reliefOrganizer = msg.sender;
@@ -41,7 +44,7 @@ contract ReliefTrail {
     /// @notice Pay relief funds and publish a fingerprint for an off-chain receipt/evidence file.
     /// @param recipient Wallet receiving the payout.
     /// @param amount Amount in wei.
-    /// @param purpose Short public description. Do not include personal or sensitive data.
+    /// @param purpose Public description of at most 160 bytes. Never include personal or sensitive data.
     /// @param evidenceHash Keccak-256 fingerprint of an evidence file stored off-chain.
     function payRelief(
         address payable recipient,
@@ -53,6 +56,7 @@ contract ReliefTrail {
         if (recipient == address(0)) revert ZeroAddress();
         if (amount == 0 || amount > address(this).balance) revert InvalidPayoutAmount();
         if (evidenceHash == bytes32(0)) revert MissingEvidenceHash();
+        if (bytes(purpose).length == 0 || bytes(purpose).length > MAX_PURPOSE_BYTES) revert InvalidPurpose();
 
         // Effects before the external call; a failed transfer reverts the transaction.
         totalPaidOut += amount;

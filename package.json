@@ -1,0 +1,20 @@
+{
+  "name": "relieftrail-blockchain",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A Solidity prototype for auditable relief donations and organizer-authorized payouts",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "compile": "hardhat compile",
+    "lint": "solhint contracts/ReliefTrail.sol contracts/mocks/RevertingRecipient.sol",
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy:sepolia": "hardhat run scripts/deploy.js --network sepolia"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "dotenv": "^16.4.7",
+    "hardhat": "^2.22.17",
+    "solhint": "^5.1.0"
+  }
+}
