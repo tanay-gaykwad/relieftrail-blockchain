@@ -32,7 +32,7 @@ The test suite deploys a fresh contract for each case and exercises state change
 
 ## Local setup
 
-Requirements: Node.js 20+, Corepack/pnpm, and optionally Docker Desktop.
+Requirements: Node.js 22+, Corepack/pnpm, and optionally Docker Desktop.
 
 ```bash
 corepack enable
