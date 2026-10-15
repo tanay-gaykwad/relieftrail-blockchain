@@ -13,7 +13,7 @@ The separate [ResponseHub project](https://github.com/tanay-gaykwad/relieftrail-
 ## Contract behavior
 
 - Any account may call `donate()` with a nonzero amount of native currency.
-- The contract tracks total donations, total payouts, counts, and current balance.
+- The contract tracks total donations, total payouts, counts, current balance, and any balance outside its net donation ledger. The latter can include unsolicited native currency and does not prove where funds came from.
 - Only the account that deployed the contract may call `payRelief(...)`.
 - Payouts reject a zero recipient, zero or over-balance amount, empty evidence hash, and empty or oversized public purpose.
 - A failed recipient transfer reverts the whole transaction, including the accounting updates.
@@ -55,7 +55,7 @@ The node binds to `127.0.0.1:8545` and creates temporary, well-known development
 2. In Remix, select **Remix VM**, compile `contracts/ReliefTrail.sol` with Solidity 0.8.24, and deploy. The deploying account becomes the organizer.
 3. From another temporary Remix account, send 1 ETH to `donate()`.
 4. From the deploying account, call `payRelief` with a recipient address, a smaller amount, a short public purpose, and a nonzero 32-byte fingerprint.
-5. Inspect the event, `totalDonated`, `totalPaidOut`, `payoutCount`, and `availableBalance`.
+5. Inspect the event, `totalDonated`, `totalPaidOut`, `payoutCount`, `availableBalance`, and `unaccountedBalance`.
 6. Try `payRelief` from another account and confirm the organizer-only check rejects it.
 
 The repository screenshot shows a Remix VM run using simulated ETH. It is not a public-chain transaction.

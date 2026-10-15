@@ -32,6 +32,20 @@ describe("ReliefTrail", function () {
     expect(await contract.availableBalance()).to.equal(donation);
   });
 
+  it("reports balance received outside the donation function", async function () {
+    const donation = ethers.parseEther("1");
+    const actualBalance = ethers.parseEther("1.5");
+    await contract.connect(donor).donate({ value: donation });
+    await ethers.provider.send("hardhat_setBalance", [
+      await contract.getAddress(),
+      ethers.toQuantity(actualBalance),
+    ]);
+
+    expect(await contract.totalDonated()).to.equal(donation);
+    expect(await contract.availableBalance()).to.equal(actualBalance);
+    expect(await contract.unaccountedBalance()).to.equal(actualBalance - donation);
+  });
+
   it("rejects a zero-value donation", async function () {
     await expect(contract.connect(donor).donate()).to.be.revertedWithCustomError(contract, "ZeroDonation");
     expect(await contract.donationCount()).to.equal(0n);

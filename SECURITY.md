@@ -19,7 +19,7 @@ This repository contains a small educational contract, automated unit tests, and
 - **No identity verification:** the contract does not establish that donors, the organizer, recipients, or aid organizations are legitimate.
 - **No real-world verification:** an event or evidence hash does not prove a receipt is authentic, a payment was appropriate, or aid reached anyone.
 - **Public metadata:** recipient addresses, amounts, purposes, and hashes are public and permanent. Never publish personal or sensitive information in contract inputs.
-- **Shared balance:** donations are not earmarked. There is no refund, restricted-grant accounting, emergency pause, or payout recovery mechanism.
+- **Shared balance:** donations are not earmarked. Native currency may also reach a contract outside `donate()`, so `availableBalance()` can differ from the donation ledger. `unaccountedBalance()` makes that difference visible; it does not establish provenance or restrict spending. There is no refund, restricted-grant accounting, emergency pause, or payout recovery mechanism.
 - **External call:** the contract transfers native currency using a low-level call. The current checks-effects-interactions order and rollback behavior are tested, but this does not replace independent adversarial review.
 
 ## Before any live use
