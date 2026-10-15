@@ -67,8 +67,16 @@ contract ReliefTrail {
         emit ReliefPaid(recipient, amount, purpose, evidenceHash);
     }
 
-    /// @notice Current funds held by this contract.
+    /// @notice Current funds held by this contract, including any unsolicited native currency.
     function availableBalance() external view returns (uint256) {
         return address(this).balance;
+    }
+
+    /// @notice Balance above the net donation ledger, such as forcibly sent native currency.
+    /// @dev This is an accounting signal, not proof of donation origin or a separate spending restriction.
+    function unaccountedBalance() external view returns (uint256) {
+        uint256 accountedBalance = totalDonated > totalPaidOut ? totalDonated - totalPaidOut : 0;
+        uint256 actualBalance = address(this).balance;
+        return actualBalance > accountedBalance ? actualBalance - accountedBalance : 0;
     }
 }
