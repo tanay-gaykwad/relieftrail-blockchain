@@ -46,6 +46,14 @@ describe("ReliefTrail", function () {
     expect(await contract.unaccountedBalance()).to.equal(actualBalance - donation);
   });
 
+  it("rejects invalid response codes", async function () {
+    await expect(contract.connect(donor).donate("bad code", { value: 1n }))
+      .to.be.revertedWithCustomError(contract, "InvalidResponseCode");
+    await expect(contract.connect(donor).donate("AB", { value: 1n }))
+      .to.be.revertedWithCustomError(contract, "InvalidResponseCode");
+    expect(await contract.donationCount()).to.equal(0n);
+  });
+
   it("rejects a zero-value donation", async function () {
     await expect(contract.connect(donor).donate("FLOOD-26-01")).to.be.revertedWithCustomError(contract, "ZeroDonation");
     expect(await contract.donationCount()).to.equal(0n);
