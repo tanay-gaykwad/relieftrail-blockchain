@@ -8,16 +8,16 @@ This is a focused smart-contract portfolio project. It is not a donation service
 
 When a relief payment is represented on a public chain, donors and reviewers can inspect the transaction and emitted event history. The contract demonstrates how authorization, amount limits, and state updates can be enforced at the contract boundary. It does not validate an organization, recipient, or off-chain receipt.
 
-The separate [ResponseHub project](https://github.com/tanay-gaykwad/relieftrail-response-hub) models relational grant operations. The two repositories share a product story but are not connected in software.
+The separate [ResponseHub project](https://github.com/tanay-gaykwad/relieftrail-response-hub) models relational grant operations. Their local/test-chain integration records donations and payouts in a separate event ledger; it does not move funds through the web app or claim aid delivery.
 
 ## Contract behavior
 
-- Any account may call `donate()` with a nonzero amount of native currency.
+- Any account may call `donate(responseCode)` with a nonzero amount of native currency; the response code is public and must not identify a person.
 - The contract tracks total donations, total payouts, counts, current balance, and any balance outside its net donation ledger. The latter can include unsolicited native currency and does not prove where funds came from.
 - Only the account that deployed the contract may call `payRelief(...)`.
 - Payouts reject a zero recipient, zero or over-balance amount, empty evidence hash, and empty or oversized public purpose.
 - A failed recipient transfer reverts the whole transaction, including the accounting updates.
-- `DonationReceived` and `ReliefPaid` events expose the submitted transaction details.
+- `DonationReceived` and `ReliefPaid` events expose the response code and submitted transaction details.
 
 The recipient and purpose are public. Never put names, addresses, medical details, case IDs, or confidential information in a transaction. The evidence hash should be computed off-chain from a file that is itself safe to disclose; hashing does not make the underlying claim true.
 
@@ -54,7 +54,7 @@ The node binds to `127.0.0.1:8545` and creates temporary, well-known development
 1. Run `pnpm test` to see the contract and test cases execute against Hardhat's local network.
 2. In Remix, select **Remix VM**, compile `contracts/ReliefTrail.sol` with Solidity 0.8.24, and deploy. The deploying account becomes the organizer.
 3. From another temporary Remix account, send 1 ETH to `donate()`.
-4. From the deploying account, call `payRelief` with a recipient address, a smaller amount, a short public purpose, and a nonzero 32-byte fingerprint.
+4. From the deploying account, call `payRelief` with a recipient address, `FLOOD-26-01`, a smaller amount, a short public purpose, and a nonzero 32-byte fingerprint.
 5. Inspect the event, `totalDonated`, `totalPaidOut`, `payoutCount`, `availableBalance`, and `unaccountedBalance`.
 6. Try `payRelief` from another account and confirm the organizer-only check rejects it.
 
@@ -73,6 +73,8 @@ The repository includes an opt-in deployment script, but **no public testnet dep
 3. Fund the test wallet with Sepolia test ETH from a faucet.
 4. Run `pnpm deploy:sepolia`. The script refuses to deploy unless the provider reports Sepolia chain ID `11155111`.
 5. Independently inspect the transaction and contract address on a Sepolia block explorer. Add a verified address/link here only after deployment and source verification succeed.
+
+For the ResponseHub integration, use the separate local Hardhat node and `pnpm deploy:local`; do not point the bridge at Sepolia or another public network in this portfolio demo.
 
 Do not use a mainnet wallet or real funds. The deployment script is not a security review.
 
